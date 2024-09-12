@@ -1,0 +1,209 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_PROG" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <PROGDIR>
+    <NAME>ZPG_SRUETH_AOC</NAME>
+    <DBAPL>S</DBAPL>
+    <SUBC>1</SUBC>
+    <RLOAD>D</RLOAD>
+    <FIXPT>X</FIXPT>
+    <LDBNAME>D$S</LDBNAME>
+    <UCCHECK>X</UCCHECK>
+   </PROGDIR>
+   <TPOOL>
+    <item>
+     <ID>I</ID>
+     <KEY>B01</KEY>
+     <ENTRY>Jahr</ENTRY>
+     <LENGTH>13</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>B02</KEY>
+     <ENTRY>Tag</ENTRY>
+     <LENGTH>13</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>B03</KEY>
+     <ENTRY>Optionen</ENTRY>
+     <LENGTH>13</LENGTH>
+    </item>
+    <item>
+     <ID>R</ID>
+     <ENTRY>Advent of Code SRUETH</ENTRY>
+     <LENGTH>21</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D01</KEY>
+     <ENTRY>Tag #01</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D02</KEY>
+     <ENTRY>Tag #02</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D03</KEY>
+     <ENTRY>Tag #03</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D04</KEY>
+     <ENTRY>Tag #04</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D05</KEY>
+     <ENTRY>Tag #05</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D06</KEY>
+     <ENTRY>Tag #06</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D07</KEY>
+     <ENTRY>Tag #07</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D08</KEY>
+     <ENTRY>Tag #08</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D09</KEY>
+     <ENTRY>Tag #09</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D10</KEY>
+     <ENTRY>Tag #10</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D11</KEY>
+     <ENTRY>Tag #11</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D12</KEY>
+     <ENTRY>Tag #12</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D13</KEY>
+     <ENTRY>Tag #13</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D14</KEY>
+     <ENTRY>Tag #14</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D15</KEY>
+     <ENTRY>Tag #15</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D16</KEY>
+     <ENTRY>Tag #16</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D17</KEY>
+     <ENTRY>Tag #17</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D18</KEY>
+     <ENTRY>Tag #18</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D19</KEY>
+     <ENTRY>Tag #19</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D20</KEY>
+     <ENTRY>Tag #20</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D21</KEY>
+     <ENTRY>Tag #21</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D22</KEY>
+     <ENTRY>Tag #22</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D23</KEY>
+     <ENTRY>Tag #23</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D24</KEY>
+     <ENTRY>Tag #24</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_D25</KEY>
+     <ENTRY>Tag #25</ENTRY>
+     <LENGTH>15</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_VERB</KEY>
+     <ENTRY>Erweiterter Output</ENTRY>
+     <LENGTH>26</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_Y2023</KEY>
+     <ENTRY>Jahr 2023</ENTRY>
+     <LENGTH>17</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_Y2024</KEY>
+     <ENTRY>Jahr 2024</ENTRY>
+     <LENGTH>17</LENGTH>
+    </item>
+   </TPOOL>
+  </asx:values>
+ </asx:abap>
+</abapGit>
