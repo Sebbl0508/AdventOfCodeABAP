@@ -146,6 +146,53 @@ CLASS zcl_srueth_aoc_2023 IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD day_02_part_1.
+    TYPES: BEGIN OF ts_cube_set,
+             game       TYPE i,
+             set        TYPE i,
+             cube_count TYPE i,
+             color      TYPE string,
+           END OF ts_cube_set.
+
+    DATA: ls_cube_set     TYPE ts_cube_set,
+          lv_game_id      TYPE i,
+          lv_set_idx      TYPE i,
+          lv_tmp_str      TYPE string,
+          lt_cube_sets    TYPE TABLE OF ts_cube_set,
+          lt_splits       TYPE TABLE OF string,
+          lt_cube_split   TYPE TABLE OF string,
+          lt_cube_split2  TYPE TABLE OF string.
+
+    LOOP AT mt_input ASSIGNING FIELD-SYMBOL(<ls_line>).
+      CLEAR: ls_cube_set
+           , lt_splits
+           , lt_cube_split
+           , lt_cube_split2
+           .
+
+      SPLIT <ls_line> AT ':' INTO TABLE lt_splits.
+
+      " Set game ID
+      lv_tmp_str = lt_splits[ 1 ].
+      ls_cube_set-game = lv_tmp_str+4.
+
+      lv_tmp_str = lt_splits[ 2 ].
+      CLEAR lt_splits.
+      SPLIT lv_tmp_str AT ';' INTO TABLE lt_splits.
+
+      " LT_SPLITS is now split by sets
+      LOOP AT lt_splits ASSIGNING FIELD-SYMBOL(<ls_set>).
+        ls_cube_set-set = sy-index.
+
+        CONDENSE <ls_set>.
+        SPLIT <ls_set> AT ',' INTO TABLE lt_cube_split.
+
+        LOOP AT lt_cube_split ASSIGNING FIELD-SYMBOL(<ls_cube>).
+          SPLIT <ls_cube> AT space INTO TABLE lt_cube_split2.
+
+
+        ENDLOOP.
+      ENDLOOP.
+    ENDLOOP.
   ENDMETHOD.
 
   METHOD day_02_part_2.
