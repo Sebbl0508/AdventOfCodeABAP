@@ -198,5 +198,67 @@ CLASS zcl_srueth_aoc_2024 IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD day_02_part_2.
+    DATA: lv_index              TYPE i,
+          lv_diff               TYPE i,
+          lv_last_level         TYPE i,
+          lv_increasing         TYPE abap_bool,
+          lv_increasing_current TYPE abap_bool,
+          lv_end_report         TYPE abap_bool,
+          lv_safe_reports       TYPE i,
+          ls_report_copy        TYPE ts_day_02_line.
+
+    LOOP AT it_input ASSIGNING FIELD-SYMBOL(<ls_report>).
+      DO ( lines( <ls_report>-numbers ) + 1 ) TIMES.
+        CLEAR: lv_last_level, lv_increasing,
+               lv_increasing_current, lv_end_report.
+
+        ls_report_copy = <ls_report>.
+
+        IF sy-index <> 1.
+          DELETE ls_report_copy-numbers INDEX ( sy-index - 1 ).
+        ENDIF.
+
+        LOOP AT ls_report_copy-numbers ASSIGNING FIELD-SYMBOL(<lv_level>).
+          lv_index = sy-tabix.
+          CLEAR: lv_diff.
+
+          IF lv_last_level IS INITIAL.
+            lv_last_level = <lv_level>.
+            CONTINUE.
+          ENDIF.
+
+          lv_increasing_current = xsdbool( <lv_level> > lv_last_level ).
+
+          " We are on Nr. 2. There are no previous inc- or decreasings.
+          IF lv_index = 2.
+            lv_increasing = lv_increasing_current.
+          ENDIF.
+
+          IF lv_increasing_current <> lv_increasing.
+            " Unsafe report
+            lv_end_report = abap_true.
+            EXIT.
+          ENDIF.
+
+          lv_diff = abs( <lv_level> - lv_last_level ).
+
+          IF lv_diff < 1 OR lv_diff > 3.
+            lv_end_report = abap_true.
+            EXIT.
+          ENDIF.
+
+          lv_last_level = <lv_level>.
+        ENDLOOP.
+
+        IF lv_end_report = abap_true.
+          CONTINUE.
+        ENDIF.
+
+        ADD 1 TO lv_safe_reports.
+        EXIT.
+      ENDDO.
+    ENDLOOP.
+
+    WRITE: |Part 02: { lv_safe_reports } Reports are safe|, /.
   ENDMETHOD.
 ENDCLASS.
