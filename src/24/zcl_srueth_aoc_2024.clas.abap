@@ -8,6 +8,19 @@ CLASS zcl_srueth_aoc_2024 DEFINITION
     "!
     METHODS day_01.
 
+
+    "! <p class="shorttext synchronized" lang="de">Tag #02</p>
+    "!
+    METHODS day_02.
+
+  PROTECTED SECTION.
+    TYPES: BEGIN OF ts_day_02_line,
+            numbers TYPE ztt_srueth_int4,
+           END OF ts_day_02_line.
+
+    TYPES: ts_day_02_input TYPE TABLE OF ts_day_02_line.
+
+
     METHODS day_01_part_1
       IMPORTING it_list_1 TYPE ztt_srueth_int4
                 it_list_2 TYPE ztt_srueth_int4.
@@ -15,7 +28,12 @@ CLASS zcl_srueth_aoc_2024 DEFINITION
       IMPORTING it_list_1 TYPE ztt_srueth_int4
                 it_list_2 TYPE ztt_srueth_int4.
 
-  PROTECTED SECTION.
+    METHODS day_02_part_1
+      IMPORTING
+        it_input TYPE ts_day_02_input.
+    METHODS day_02_part_2
+      IMPORTING
+        it_input TYPE ts_day_02_input.
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -98,5 +116,87 @@ CLASS zcl_srueth_aoc_2024 IMPLEMENTATION.
 
 
     WRITE: |Part 02: { lv_res }|, /.
+  ENDMETHOD.
+
+  METHOD day_02.
+    DATA: lt_line      TYPE TABLE OF string,
+          lt_line_nums TYPE TABLE OF ts_day_02_line.
+
+    LOOP AT mt_input ASSIGNING FIELD-SYMBOL(<ls_line>).
+      SPLIT <ls_line> AT space INTO TABLE lt_line.
+
+      APPEND INITIAL LINE TO lt_line_nums ASSIGNING FIELD-SYMBOL(<ls_line_nums>).
+
+      LOOP AT lt_line ASSIGNING FIELD-SYMBOL(<ls_num_c>).
+        APPEND CONV i( <ls_num_c> ) TO <ls_line_nums>-numbers.
+      ENDLOOP.
+    ENDLOOP.
+
+    day_02_part_1( lt_line_nums ).
+    day_02_part_2( lt_line_nums ).
+  ENDMETHOD.
+
+  METHOD day_02_part_1.
+    DATA: lv_index              TYPE i,
+          lv_diff               TYPE i,
+          lv_last_level         TYPE i,
+          lv_increasing         TYPE abap_bool,
+          lv_increasing_current TYPE abap_bool,
+          lv_end_report         TYPE abap_bool,
+          lv_safe_reports       TYPE i.
+
+    LOOP AT it_input ASSIGNING FIELD-SYMBOL(<ls_report>).
+      CLEAR: lv_last_level, lv_increasing,
+             lv_increasing_current, lv_end_report.
+
+      LOOP AT <ls_report>-numbers ASSIGNING FIELD-SYMBOL(<lv_level>).
+        lv_index = sy-tabix.
+        CLEAR: lv_diff.
+
+        " Checking. TODO: Entfernen
+        IF <lv_level> = 0.
+          WRITE: 'Found 0!!!', /.
+        ENDIF.
+
+        IF lv_last_level IS INITIAL.
+          lv_last_level = <lv_level>.
+          CONTINUE.
+        ENDIF.
+
+        lv_increasing_current = xsdbool( <lv_level> > lv_last_level ).
+
+        " We are on Nr. 2. There are no previous inc- or decreasings.
+        IF lv_index = 2.
+          lv_increasing = lv_increasing_current.
+        ENDIF.
+
+        IF lv_increasing_current <> lv_increasing.
+          " Unsafe report
+          lv_end_report = abap_true.
+          EXIT.
+        ENDIF.
+
+        lv_diff = abs( <lv_level> - lv_last_level ).
+
+        IF lv_diff < 1 OR lv_diff > 3.
+          lv_end_report = abap_true.
+          EXIT.
+        ENDIF.
+
+        lv_last_level = <lv_level>.
+      ENDLOOP.
+
+      IF lv_end_report = abap_true.
+        CONTINUE.
+      ENDIF.
+
+      ADD 1 TO lv_safe_reports.
+    ENDLOOP.
+
+
+    WRITE: |Part 01: { lv_safe_reports } Reports are safe|, /.
+  ENDMETHOD.
+
+  METHOD day_02_part_2.
   ENDMETHOD.
 ENDCLASS.
