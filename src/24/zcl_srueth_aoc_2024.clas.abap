@@ -13,6 +13,10 @@ CLASS zcl_srueth_aoc_2024 DEFINITION
     "!
     METHODS day_02.
 
+    "! <p class="shorttext synchronized" lang="de">Tag #03</p>
+    "!
+    METHODS day_03.
+
   PROTECTED SECTION.
     TYPES: BEGIN OF ts_day_02_line,
             numbers TYPE ztt_srueth_int4,
@@ -34,6 +38,13 @@ CLASS zcl_srueth_aoc_2024 DEFINITION
     METHODS day_02_part_2
       IMPORTING
         it_input TYPE ts_day_02_input.
+
+    METHODS day_03_part_1
+      IMPORTING
+        iv_input TYPE string.
+    METHODS day_03_part_2
+      IMPORTING
+        iv_input TYPE string.
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -260,5 +271,101 @@ CLASS zcl_srueth_aoc_2024 IMPLEMENTATION.
     ENDLOOP.
 
     WRITE: |Part 02: { lv_safe_reports } Reports are safe|, /.
+  ENDMETHOD.
+
+  METHOD day_03.
+    DATA: lv_joined_input TYPE string.
+
+    LOOP AT mt_input ASSIGNING FIELD-SYMBOL(<ls_line>).
+      CONCATENATE lv_joined_input <ls_line> INTO lv_joined_input.
+    ENDLOOP.
+
+    day_03_part_1( lv_joined_input ).
+    day_03_part_2( lv_joined_input ).
+  ENDMETHOD.
+
+  METHOD day_03_part_1.
+    DATA: lv_tmp_number1 TYPE i,
+          lv_tmp_number2 TYPE i,
+          lv_result      TYPE i.
+
+    FIND ALL OCCURRENCES OF PCRE 'mul\((\d{1,3}),(\d{1,3})\)'
+      IN iv_input
+      RESULTS DATA(lt_rgx_res).
+
+    LOOP AT lt_rgx_res ASSIGNING FIELD-SYMBOL(<ls_match>).
+      READ TABLE <ls_match>-submatches ASSIGNING FIELD-SYMBOL(<ls_sm1>) INDEX 1.
+      IF sy-subrc <> 0.
+        WRITE: |Part 1: No submatches!|, /.
+        RETURN.
+      ENDIF.
+
+      READ TABLE <ls_match>-submatches ASSIGNING FIELD-SYMBOL(<ls_sm2>) INDEX 2.
+      IF sy-subrc <> 0.
+        WRITE: |Part 1: No second submatch|, /.
+        RETURN.
+      ENDIF.
+
+      lv_tmp_number1 = iv_input+<ls_sm1>-offset(<ls_sm1>-length).
+      lv_tmp_number2 = iv_input+<ls_sm2>-offset(<ls_sm2>-length).
+
+      lv_result += lv_tmp_number1 * lv_tmp_number2.
+    ENDLOOP.
+
+    WRITE: |Part 1: Result: { lv_result }|, /.
+  ENDMETHOD.
+
+  METHOD day_03_part_2.
+    DATA: lv_disabled    TYPE abap_bool VALUE abap_false,
+          lv_tmp_str     TYPE string,
+          lv_tmp_number1 TYPE i,
+          lv_tmp_number2 TYPE i,
+          lv_result      TYPE i.
+
+    FIND ALL OCCURRENCES OF PCRE 'mul\((\d{1,3}),(\d{1,3})\)'
+      IN iv_input
+      RESULTS DATA(lt_rgx_res).
+
+    FIND ALL OCCURRENCES OF PCRE `(do\(\)|don't\(\))`
+      IN iv_input
+      RESULTS DATA(lt_rgx_do_dont).
+
+    SORT lt_rgx_do_dont BY offset ASCENDING.
+
+    LOOP AT lt_rgx_res ASSIGNING FIELD-SYMBOL(<ls_match>).
+      READ TABLE <ls_match>-submatches ASSIGNING FIELD-SYMBOL(<ls_sm1>) INDEX 1.
+      IF sy-subrc <> 0.
+        WRITE: |Part 1: No submatches!|, /.
+        RETURN.
+      ENDIF.
+
+      READ TABLE <ls_match>-submatches ASSIGNING FIELD-SYMBOL(<ls_sm2>) INDEX 2.
+      IF sy-subrc <> 0.
+        WRITE: |Part 1: No second submatch|, /.
+        RETURN.
+      ENDIF.
+
+      LOOP AT lt_rgx_do_dont ASSIGNING FIELD-SYMBOL(<ls_do_dont_match>)
+                             WHERE offset < <ls_match>-offset.
+        lv_tmp_str = iv_input+<ls_do_dont_match>-offset(<ls_do_dont_match>-length).
+
+        IF lv_tmp_str = 'do()'.
+          lv_disabled = abap_false.
+        ELSEIF lv_tmp_str = 'don''t()'.
+          lv_disabled = abap_true.
+        ENDIF.
+      ENDLOOP.
+
+      IF lv_disabled = abap_true.
+        CONTINUE.
+      ENDIF.
+
+      lv_tmp_number1 = iv_input+<ls_sm1>-offset(<ls_sm1>-length).
+      lv_tmp_number2 = iv_input+<ls_sm2>-offset(<ls_sm2>-length).
+
+      lv_result += lv_tmp_number1 * lv_tmp_number2.
+    ENDLOOP.
+
+    WRITE: |Part 2: Result: { lv_result }|, /.
   ENDMETHOD.
 ENDCLASS.
