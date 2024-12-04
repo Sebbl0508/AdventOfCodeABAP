@@ -3,6 +3,12 @@ CLASS zcl_srueth_aoc_base DEFINITION
   CREATE PUBLIC.
 
   PUBLIC SECTION.
+    TYPES: BEGIN OF ts_vec2i,
+             x TYPE i,
+             y TYPE i,
+           END OF ts_vec2i.
+
+
     METHODS constructor
       IMPORTING
         iv_verbose TYPE abap_bool DEFAULT abap_false.
@@ -22,6 +28,13 @@ CLASS zcl_srueth_aoc_base DEFINITION
     CLASS-METHODS open_file
       RETURNING VALUE(rt_file_contents) TYPE ztt_srueth_string
       RAISING   zcx_srueth_aoc_exception.
+
+    METHODS get_char_xy
+      IMPORTING
+        is_coord       TYPE ts_vec2i
+      RETURNING
+        VALUE(rv_char) TYPE char1.
+
   PROTECTED SECTION.
     DATA mv_day_meth_prefix TYPE string.
     DATA mv_verbose TYPE abap_bool.
@@ -122,5 +135,10 @@ CLASS zcl_srueth_aoc_base IMPLEMENTATION.
         EXPORTING
           iv_message = |Datei konnte nicht gelesen werden!|.
     ENDIF.
+  ENDMETHOD.
+
+  METHOD get_char_xy.
+    DATA(lv_line) = mt_input[ is_coord-y + 1 ].
+    rv_char = lv_line+is_coord-x(1).
   ENDMETHOD.
 ENDCLASS.

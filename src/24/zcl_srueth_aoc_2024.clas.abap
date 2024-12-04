@@ -29,11 +29,6 @@ CLASS zcl_srueth_aoc_2024 DEFINITION
 
     TYPES: ts_day_02_input TYPE TABLE OF ts_day_02_line.
 
-    TYPES: BEGIN OF ts_vec2i,
-            x TYPE i,
-            y TYPE i,
-           END OF ts_vec2i.
-
     CONSTANTS: gc_day_04_xmas_len TYPE i VALUE 4.
 
 
@@ -61,8 +56,9 @@ CLASS zcl_srueth_aoc_2024 DEFINITION
     METHODS day_04_part_1.
     METHODS day_04_part_2.
 
-    METHODS day_04_find_xmas_from
+    METHODS find_string_in_grid
       IMPORTING
+        iv_string       TYPE string
         iv_x            TYPE i
         iv_y            TYPE i
         iv_size_x       TYPE i
@@ -71,6 +67,7 @@ CLASS zcl_srueth_aoc_2024 DEFINITION
         iv_delta_y      TYPE i
       RETURNING
         VALUE(rv_found) TYPE abap_bool.
+
 
 PRIVATE SECTION.
 ENDCLASS.
@@ -450,7 +447,8 @@ CLASS zcl_srueth_aoc_2024 IMPLEMENTATION.
 
         " Check all directions
         LOOP AT lt_directions ASSIGNING FIELD-SYMBOL(<ls_direction>).
-          lv_xmas_found = day_04_find_xmas_from(
+          lv_xmas_found = find_string_in_grid(
+            iv_string  = 'XMAS'
             iv_x       = lv_idx_x
             iv_y       = lv_idx_y
             iv_size_x  = lv_size_x
@@ -470,20 +468,94 @@ CLASS zcl_srueth_aoc_2024 IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD day_04_part_2.
+    DATA: lv_size_x        TYPE i,
+          lv_size_y        TYPE i,
+          lv_idx_x         TYPE i,
+          lv_idx_y         TYPE i,
+          lv_result        TYPE i,
+          lv_num_mas_found TYPE abap_bool,
+          lv_char          TYPE char1,
+          lv_char_br       TYPE char1,
+          lv_char_tr       TYPE char1,
+          lv_char_bl       TYPE char1,
+          lv_char_tl       TYPE char1,
+          lt_directions    TYPE TABLE OF ts_vec2i.
+
+    FIELD-SYMBOLS: <ls_line> TYPE string.
+
+
+    lv_size_x = lines( mt_input ).
+    lv_size_y = strlen( mt_input[ 1 ] ).
+
+    lt_directions = VALUE #(
+      ( x = 1 y = 1 ) " NE
+      ( x = 1 y = -1 ) " SE
+      ( x = -1 y = -1 ) " SW
+      ( x = -1 y = 1 ) " NW
+    ).
+
+    DO lv_size_y TIMES.
+      lv_idx_y = sy-index - 1.
+      DO lv_size_x TIMES.
+        lv_idx_x = sy-index - 1.
+
+        CLEAR: lv_num_mas_found.
+
+        lv_char = get_char_xy( VALUE #( x = lv_idx_x y = lv_idx_y ) ).
+        IF lv_char <> 'A'.
+          CONTINUE.
+        ENDIF.
+
+        " Check directions
+        IF ( lv_idx_y - 1 ) < 0 OR ( lv_idx_x - 1 ) < 0.
+          CONTINUE.
+        ENDIF.
+
+        IF ( lv_idx_x + 1 ) >= lv_size_x OR ( lv_idx_y + 1 ) >= lv_size_y.
+          CONTINUE.
+        ENDIF.
+
+        lv_char_bl = get_char_xy( VALUE #( x = ( lv_idx_x - 1 ) y = ( lv_idx_y + 1 ) ) ).
+        lv_char_tl = get_char_xy( VALUE #( x = ( lv_idx_x - 1 ) y = ( lv_idx_y - 1 ) ) ).
+        lv_char_br = get_char_xy( VALUE #( x = ( lv_idx_x + 1 ) y = ( lv_idx_y + 1 ) ) ).
+        lv_char_tr = get_char_xy( VALUE #( x = ( lv_idx_x + 1 ) y = ( lv_idx_y - 1 ) ) ).
+
+        " Are the corner-chars either 'M' or 'S'?
+        IF lv_char_bl NA 'MS'
+        OR lv_char_tl NA 'MS'
+        OR lv_char_br NA 'MS'
+        OR lv_char_tr NA 'MS'.
+          CONTINUE.
+        ENDIF.
+
+        " Are the opposite corners the same?
+        IF ( lv_char_bl = lv_char_tr )
+        OR ( lv_char_br = lv_char_tl ).
+          CONTINUE.
+        ENDIF.
+
+        ADD 1 TO lv_result.
+      ENDDO.
+    ENDDO.
+
+    WRITE: |Part 02: Found X-MAS { lv_result } times.|, /.
   ENDMETHOD.
 
-  METHOD day_04_find_xmas_from.
+  METHOD find_string_in_grid.
     DATA: lv_x_end   TYPE i,
           lv_y_end   TYPE i,
           lv_idx_x   TYPE i,
           lv_idx_y   TYPE i,
           lv_str     TYPE string,
-          lv_str_tmp TYPE string.
+          lv_str_tmp TYPE string,
+          lv_strlen  TYPE i.
 
     rv_found = abap_false.
 
-    lv_x_end = iv_x + ( iv_delta_x * gc_day_04_xmas_len ).
-    lv_y_end = iv_y + ( iv_delta_y * gc_day_04_xmas_len ).
+    lv_strlen = strlen( iv_string ).
+
+    lv_x_end = iv_x + ( iv_delta_x * lv_strlen ).
+    lv_y_end = iv_y + ( iv_delta_y * lv_strlen ).
 
     IF lv_x_end > iv_size_x
     OR lv_x_end < -1
@@ -495,20 +567,16 @@ CLASS zcl_srueth_aoc_2024 IMPLEMENTATION.
     lv_idx_x = iv_x.
     lv_idx_y = iv_y.
 
-    DO gc_day_04_xmas_len TIMES.
+    DO lv_strlen TIMES.
 
       lv_str_tmp = mt_input[ lv_idx_y + 1 ].
       lv_str = |{ lv_str }{ lv_str_tmp+lv_idx_x(1) }|.
-
-      IF lv_str NA 'XS'.
-        RETURN.
-      ENDIF.
 
       ADD iv_delta_x TO lv_idx_x.
       ADD iv_delta_y TO lv_idx_y.
     ENDDO.
 
-    IF lv_str = 'XMAS'.
+    IF lv_str = iv_string.
       rv_found = abap_true.
       RETURN.
     ENDIF.
