@@ -17,12 +17,24 @@ CLASS zcl_srueth_aoc_2024 DEFINITION
     "!
     METHODS day_03.
 
+
+    "! <p class="shorttext synchronized" lang="de">Tag #04</p>
+    "!
+    METHODS day_04.
+
   PROTECTED SECTION.
     TYPES: BEGIN OF ts_day_02_line,
-            numbers TYPE ztt_srueth_int4,
+             numbers TYPE ztt_srueth_int4,
            END OF ts_day_02_line.
 
     TYPES: ts_day_02_input TYPE TABLE OF ts_day_02_line.
+
+    TYPES: BEGIN OF ts_vec2i,
+            x TYPE i,
+            y TYPE i,
+           END OF ts_vec2i.
+
+    CONSTANTS: gc_day_04_xmas_len TYPE i VALUE 4.
 
 
     METHODS day_01_part_1
@@ -45,7 +57,22 @@ CLASS zcl_srueth_aoc_2024 DEFINITION
     METHODS day_03_part_2
       IMPORTING
         iv_input TYPE string.
-  PRIVATE SECTION.
+
+    METHODS day_04_part_1.
+    METHODS day_04_part_2.
+
+    METHODS day_04_find_xmas_from
+      IMPORTING
+        iv_x            TYPE i
+        iv_y            TYPE i
+        iv_size_x       TYPE i
+        iv_size_y       TYPE i
+        iv_delta_x      TYPE i
+        iv_delta_y      TYPE i
+      RETURNING
+        VALUE(rv_found) TYPE abap_bool.
+
+PRIVATE SECTION.
 ENDCLASS.
 
 
@@ -367,5 +394,123 @@ CLASS zcl_srueth_aoc_2024 IMPLEMENTATION.
     ENDLOOP.
 
     WRITE: |Part 2: Result: { lv_result }|, /.
+  ENDMETHOD.
+
+  METHOD day_04.
+    DATA: lv_last_strlen TYPE i.
+
+    LOOP AT mt_input ASSIGNING FIELD-SYMBOL(<ls_line>).
+      IF lv_last_strlen IS INITIAL.
+        lv_last_strlen = strlen( <ls_line> ).
+        CONTINUE.
+      ENDIF.
+
+      IF lv_last_strlen <> strlen( <ls_line> ).
+        WRITE: 'Different line lengths. Invalid input!', /.
+        RETURN.
+      ENDIF.
+
+      lv_last_strlen = strlen( <ls_line> ).
+    ENDLOOP.
+
+    day_04_part_1( ).
+    day_04_part_2( ).
+  ENDMETHOD.
+
+  METHOD day_04_part_1.
+    DATA: lv_size_x     TYPE i,
+          lv_size_y     TYPE i,
+          lv_idx_x      TYPE i,
+          lv_idx_y      TYPE i,
+          lv_result     TYPE i,
+          lv_xmas_found TYPE abap_bool,
+          lt_directions TYPE TABLE OF ts_vec2i.
+
+    FIELD-SYMBOLS: <ls_line> TYPE string.
+
+
+    lv_size_x = lines( mt_input ).
+    lv_size_y = strlen( mt_input[ 1 ] ).
+
+    lt_directions = VALUE #(
+      ( x = 0 y = 1 ) " N
+      ( x = 1 y = 1 ) " NE
+      ( x = 1 y = 0 ) " E
+      ( x = 1 y = -1 ) " SE
+      ( x = 0 y = -1 ) " S
+      ( x = -1 y = -1 ) " SW
+      ( x = -1 y = 0 ) " W
+      ( x = -1 y = 1 ) " NW
+    ).
+
+    DO lv_size_y TIMES.
+      lv_idx_y = sy-index - 1.
+      DO lv_size_x TIMES.
+        lv_idx_x = sy-index - 1.
+
+        " Check all directions
+        LOOP AT lt_directions ASSIGNING FIELD-SYMBOL(<ls_direction>).
+          lv_xmas_found = day_04_find_xmas_from(
+            iv_x       = lv_idx_x
+            iv_y       = lv_idx_y
+            iv_size_x  = lv_size_x
+            iv_size_y  = lv_size_y
+            iv_delta_x = <ls_direction>-x
+            iv_delta_y = <ls_direction>-y
+          ).
+
+          IF lv_xmas_found = abap_true.
+            ADD 1 TO lv_result.
+          ENDIF.
+        ENDLOOP.
+      ENDDO.
+    ENDDO.
+
+    WRITE: |Part 01: Found 'XMAS' { lv_result } times.|, /.
+  ENDMETHOD.
+
+  METHOD day_04_part_2.
+  ENDMETHOD.
+
+  METHOD day_04_find_xmas_from.
+    DATA: lv_x_end   TYPE i,
+          lv_y_end   TYPE i,
+          lv_idx_x   TYPE i,
+          lv_idx_y   TYPE i,
+          lv_str     TYPE string,
+          lv_str_tmp TYPE string.
+
+    rv_found = abap_false.
+
+    lv_x_end = iv_x + ( iv_delta_x * gc_day_04_xmas_len ).
+    lv_y_end = iv_y + ( iv_delta_y * gc_day_04_xmas_len ).
+
+    IF lv_x_end > iv_size_x
+    OR lv_x_end < -1
+    OR lv_y_end > iv_size_y
+    OR lv_y_end < -1.
+      RETURN.
+    ENDIF.
+
+    lv_idx_x = iv_x.
+    lv_idx_y = iv_y.
+
+    DO gc_day_04_xmas_len TIMES.
+
+      lv_str_tmp = mt_input[ lv_idx_y + 1 ].
+      lv_str = |{ lv_str }{ lv_str_tmp+lv_idx_x(1) }|.
+
+      IF lv_str NA 'XS'.
+        RETURN.
+      ENDIF.
+
+      ADD iv_delta_x TO lv_idx_x.
+      ADD iv_delta_y TO lv_idx_y.
+    ENDDO.
+
+    IF lv_str = 'XMAS'.
+      rv_found = abap_true.
+      RETURN.
+    ENDIF.
   ENDMETHOD.
 ENDCLASS.

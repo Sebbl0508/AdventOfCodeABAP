@@ -27,6 +27,11 @@
      <LANGU>D</LANGU>
      <DESCRIPT>Tag #03</DESCRIPT>
     </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CMPNAME>DAY_04</CMPNAME>
+     <LANGU>D</LANGU>
+     <DESCRIPT>Tag #04</DESCRIPT>
+    </SEOCOMPOTX>
    </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
