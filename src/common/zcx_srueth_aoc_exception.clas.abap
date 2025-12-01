@@ -17,14 +17,17 @@ ENDCLASS.
 
 
 
-CLASS zcx_srueth_aoc_exception IMPLEMENTATION.
-  METHOD constructor ##ADT_SUPPRESS_GENERATION.
-    super->constructor(  ).
+CLASS ZCX_SRUETH_AOC_EXCEPTION IMPLEMENTATION.
 
-    mv_message = iv_message.
-  ENDMETHOD.
 
-  METHOD get_message.
-    rv_message = mv_message.
-  ENDMETHOD.
+METHOD constructor ##ADT_SUPPRESS_GENERATION.
+  super->constructor(  ).
+
+  mv_message = iv_message.
+ENDMETHOD.
+
+
+METHOD get_message.
+  rv_message = mv_message.
+ENDMETHOD.
 ENDCLASS.

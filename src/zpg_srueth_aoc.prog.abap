@@ -8,6 +8,7 @@ REPORT zpg_srueth_aoc.
 SELECTION-SCREEN BEGIN OF BLOCK b01 WITH FRAME TITLE TEXT-b01.
   PARAMETERS: p_y2023 RADIOBUTTON GROUP year DEFAULT 'X'
             , p_y2024 RADIOBUTTON GROUP year
+            , p_y2025 RADIOBUTTON GROUP year
             .
 SELECTION-SCREEN END OF BLOCK b01.
 
@@ -119,6 +120,8 @@ FORM get_year CHANGING cv_year TYPE zdte_srueth_aoc_year.
     cv_year = 2023.
   ELSEIF p_y2024 = abap_true.
     cv_year = 2024.
+  ELSEIF p_y2025 = abap_true.
+    cv_year = 2025.
   ELSE.
     " TODO: Error, shouldn't happen
   ENDIF.
@@ -130,6 +133,8 @@ FORM set_year USING iv_year TYPE zdte_srueth_aoc_year.
       p_y2023 = 'X'.
     WHEN 2024.
       p_y2024 = 'X'.
+    WHEN 2025.
+      p_y2025 = 'X'.
     WHEN OTHERS.
       WRITE: |Invalid year "{ iv_year }"!|.
   ENDCASE.

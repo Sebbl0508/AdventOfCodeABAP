@@ -14,7 +14,9 @@ ENDCLASS.
 
 
 
-CLASS zcl_srueth_aoc_constants IMPLEMENTATION.
-  METHOD class_constructor.
-  ENDMETHOD.
+CLASS ZCL_SRUETH_AOC_CONSTANTS IMPLEMENTATION.
+
+
+METHOD class_constructor.
+ENDMETHOD.
 ENDCLASS.

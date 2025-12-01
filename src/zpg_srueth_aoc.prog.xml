@@ -203,6 +203,12 @@
      <ENTRY>Jahr 2024</ENTRY>
      <LENGTH>17</LENGTH>
     </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_Y2025</KEY>
+     <ENTRY>Jahr 2025</ENTRY>
+     <LENGTH>17</LENGTH>
+    </item>
    </TPOOL>
   </asx:values>
  </asx:abap>
