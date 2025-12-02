@@ -68,7 +68,14 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
           lv_number_txt_len_half TYPE int8,
           lv_first_half          TYPE string,
           lv_second_half         TYPE string,
+          lv_pattern_buf         TYPE string,
+          lv_tmp_chunk           TYPE string,
+          lv_chunk_offset        TYPE i,
+          lv_pattern_buf_len     TYPE i,
+          lv_num_chunks          TYPE i,
+          lv_is_invalid_id       TYPE abap_bool,
           lv_solution_p1         TYPE int8,
+          lv_solution_p2         TYPE int8,
           lt_ranges              TYPE TABLE OF tt_i64_range,
           lt_text_ranges         TYPE TABLE OF string.
 
@@ -91,6 +98,8 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
 
       " Loop over every number in the range
       WHILE lv_counter LE <ls_range>-high.
+        CLEAR: lv_pattern_buf, lv_char_counter.
+
         lv_number = lv_counter.
         lv_number_txt = lv_number.
         CONDENSE lv_number_txt.
@@ -110,10 +119,50 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
           ENDIF.
         ENDIF.
 
+        " Loop over all chars in a number for part 2
+        DO lv_number_txt_len TIMES.
+          CLEAR: lv_chunk_offset.
+
+          lv_char = lv_number_txt+lv_char_counter(1).
+          CONCATENATE lv_pattern_buf lv_char INTO lv_pattern_buf.
+
+          lv_pattern_buf_len = lv_char_counter + 1.
+
+          IF lv_number_txt_len EQ lv_pattern_buf_len.
+            EXIT.
+          ENDIF.
+
+          " Can we divide the number text into buffer-len sized chunks?
+          IF lv_number_txt_len MOD lv_pattern_buf_len EQ 0.
+            lv_num_chunks = lv_number_txt_len DIV lv_pattern_buf_len.
+
+            " If all 'chunks' match we need to add the number to the solution
+            lv_is_invalid_id = abap_true.
+            DO lv_num_chunks TIMES.
+              lv_tmp_chunk = lv_number_txt+lv_chunk_offset(lv_pattern_buf_len).
+
+              IF lv_pattern_buf NE lv_tmp_chunk.
+                lv_is_invalid_id = abap_false.
+                EXIT.
+              ENDIF.
+
+              ADD lv_pattern_buf_len TO lv_chunk_offset.
+            ENDDO.
+
+            IF lv_is_invalid_id = abap_true.
+              ADD lv_number TO lv_solution_p2.
+              EXIT.
+            ENDIF.
+          ENDIF.
+
+          ADD 1 TO lv_char_counter.
+        ENDDO.
+
         ADD 1 TO lv_counter.
       ENDWHILE.
     ENDLOOP.
 
     WRITE: |Part 1: Solution: { lv_solution_p1 }|, /.
+    WRITE: |Part 2: Solution: { lv_solution_p2 }|, /.
   ENDMETHOD.
 ENDCLASS.
