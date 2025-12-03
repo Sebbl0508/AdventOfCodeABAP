@@ -6,6 +6,7 @@ CLASS zcl_srueth_aoc_2025 DEFINITION
   PUBLIC SECTION.
     METHODS day_01.
     METHODS day_02.
+    METHODS day_03.
 
   PROTECTED SECTION.
   PRIVATE SECTION.
@@ -164,5 +165,48 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
 
     WRITE: |Part 1: Solution: { lv_solution_p1 }|, /.
     WRITE: |Part 2: Solution: { lv_solution_p2 }|, /.
+  ENDMETHOD.
+
+  METHOD day_03.
+    DATA: lv_first_battery_offset  TYPE i,
+          lv_joltage               TYPE i,
+          lv_total_joltage         TYPE i,
+          lv_max_battery1          TYPE i,
+          lv_max_battery2          TYPE i,
+          lv_cur_battery           TYPE i,
+          lv_offset                TYPE i.
+
+    LOOP AT mt_input ASSIGNING FIELD-SYMBOL(<lv_bank>).
+      CLEAR: lv_first_battery_offset, lv_max_battery1, lv_max_battery2.
+
+      " Loop at batteries in bank
+      DO strlen( <lv_bank> ) - 1 TIMES.
+        lv_offset = sy-index - 1.
+
+        lv_cur_battery = <lv_bank>+lv_offset(1).
+
+        IF lv_cur_battery > lv_max_battery1.
+          lv_max_battery1 = lv_cur_battery.
+          lv_first_battery_offset = lv_offset.
+        ENDIF.
+      ENDDO.
+
+      " Now select the 2nd battery
+      DO strlen( <lv_bank> ) - ( lv_first_battery_offset + 1 ) TIMES.
+        lv_offset = sy-index + lv_first_battery_offset.
+
+        lv_cur_battery = <lv_bank>+lv_offset(1).
+
+        IF lv_cur_battery > lv_max_battery2.
+          lv_max_battery2 = lv_cur_battery.
+        ENDIF.
+      ENDDO.
+
+      lv_joltage = ( lv_max_battery1 * 10 ) + lv_max_battery2.
+
+      ADD lv_joltage TO lv_total_joltage.
+    ENDLOOP.
+
+    WRITE: |Part 1: Solution: { lv_total_joltage }|, /.
   ENDMETHOD.
 ENDCLASS.
