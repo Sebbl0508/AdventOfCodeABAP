@@ -9,6 +9,12 @@ CLASS zcl_srueth_aoc_2025 DEFINITION
     METHODS day_03.
 
   PROTECTED SECTION.
+    METHODS day03_get_largest_joltage
+      IMPORTING iv_bank          TYPE string
+                iv_num_batteries TYPE i
+                iv_offset        TYPE i DEFAULT 0
+      CHANGING  ct_batteries     TYPE ztt_srueth_aoc_int4
+      RETURNING VALUE(rv_joltage) TYPE int8.
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -168,45 +174,73 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD day_03.
-    DATA: lv_first_battery_offset  TYPE i,
-          lv_joltage               TYPE i,
-          lv_total_joltage         TYPE i,
-          lv_max_battery1          TYPE i,
-          lv_max_battery2          TYPE i,
-          lv_cur_battery           TYPE i,
-          lv_offset                TYPE i.
+    DATA: lv_joltage               TYPE int8,
+          lv_total_joltage_p1      TYPE i,
+          lv_total_joltage_p2      TYPE int8,
+          lt_batteries             TYPE ztt_srueth_aoc_int4.
 
     LOOP AT mt_input ASSIGNING FIELD-SYMBOL(<lv_bank>).
-      CLEAR: lv_first_battery_offset, lv_max_battery1, lv_max_battery2.
+      CLEAR: lt_batteries.
 
-      " Loop at batteries in bank
-      DO strlen( <lv_bank> ) - 1 TIMES.
-        lv_offset = sy-index - 1.
+      lv_joltage = day03_get_largest_joltage(
+        EXPORTING iv_bank          = <lv_bank>
+                  iv_num_batteries = 2
+        CHANGING  ct_batteries     = lt_batteries
+      ).
+      ADD lv_joltage TO lv_total_joltage_p1.
 
-        lv_cur_battery = <lv_bank>+lv_offset(1).
+      CLEAR: lt_batteries.
 
-        IF lv_cur_battery > lv_max_battery1.
-          lv_max_battery1 = lv_cur_battery.
-          lv_first_battery_offset = lv_offset.
-        ENDIF.
-      ENDDO.
-
-      " Now select the 2nd battery
-      DO strlen( <lv_bank> ) - ( lv_first_battery_offset + 1 ) TIMES.
-        lv_offset = sy-index + lv_first_battery_offset.
-
-        lv_cur_battery = <lv_bank>+lv_offset(1).
-
-        IF lv_cur_battery > lv_max_battery2.
-          lv_max_battery2 = lv_cur_battery.
-        ENDIF.
-      ENDDO.
-
-      lv_joltage = ( lv_max_battery1 * 10 ) + lv_max_battery2.
-
-      ADD lv_joltage TO lv_total_joltage.
+      lv_joltage = day03_get_largest_joltage(
+        EXPORTING iv_bank          = <lv_bank>
+                  iv_num_batteries = 12
+        CHANGING  ct_batteries     = lt_batteries
+      ).
+      ADD lv_joltage TO lv_total_joltage_p2.
     ENDLOOP.
 
-    WRITE: |Part 1: Solution: { lv_total_joltage }|, /.
+
+    WRITE: |Part 1: Solution: { lv_total_joltage_p1 }|, /.
+    WRITE: |Part 2: Solution: { lv_total_joltage_p2 }|, /.
+  ENDMETHOD.
+
+  METHOD day03_get_largest_joltage.
+    DATA: lv_do_times    TYPE i,
+          lv_offset      TYPE i,
+          lv_battery     TYPE i,
+          lv_max_battery TYPE i,
+          lv_max_offset  TYPE i.
+
+    CLEAR: rv_joltage.
+
+    lv_do_times = strlen( iv_bank ) - iv_num_batteries - iv_offset + lines( ct_batteries ) + 1.
+
+    DO lv_do_times TIMES.
+      lv_offset = sy-index - 1 + iv_offset.
+
+      lv_battery = iv_bank+lv_offset(1).
+
+      IF lv_battery > lv_max_battery.
+        lv_max_battery = lv_battery.
+        lv_max_offset  = lv_offset.
+      ENDIF.
+    ENDDO.
+
+    APPEND lv_max_battery TO ct_batteries.
+
+    IF lines( ct_batteries ) GE iv_num_batteries.
+      LOOP AT ct_batteries ASSIGNING FIELD-SYMBOL(<lv_battery>).
+        rv_joltage = rv_joltage * 10 + <lv_battery>.
+      ENDLOOP.
+
+      RETURN.
+    ENDIF.
+
+    rv_joltage = day03_get_largest_joltage(
+      EXPORTING iv_bank          = iv_bank
+                iv_num_batteries = iv_num_batteries
+                iv_offset        = lv_max_offset + 1
+      CHANGING  ct_batteries     = ct_batteries
+    ).
   ENDMETHOD.
 ENDCLASS.
