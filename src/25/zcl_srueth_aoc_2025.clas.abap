@@ -7,14 +7,20 @@ CLASS zcl_srueth_aoc_2025 DEFINITION
     METHODS day_01.
     METHODS day_02.
     METHODS day_03.
+    METHODS day_04.
 
   PROTECTED SECTION.
     METHODS day03_get_largest_joltage
-      IMPORTING iv_bank          TYPE string
-                iv_num_batteries TYPE i
-                iv_offset        TYPE i DEFAULT 0
-      CHANGING  ct_batteries     TYPE ztt_srueth_aoc_int4
+      IMPORTING iv_bank           TYPE string
+                iv_num_batteries  TYPE i
+                iv_offset         TYPE i DEFAULT 0
+      CHANGING  ct_batteries      TYPE ztt_srueth_aoc_int4
       RETURNING VALUE(rv_joltage) TYPE int8.
+
+    METHODS day04_can_forklift_access
+      IMPORTING is_position          TYPE ts_vec2i
+                is_size              TYPE ts_vec2i
+      RETURNING VALUE(rv_can_access) TYPE abap_bool.
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -242,5 +248,89 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
                 iv_offset        = lv_max_offset + 1
       CHANGING  ct_batteries     = ct_batteries
     ).
+  ENDMETHOD.
+
+  METHOD day_04.
+    DATA: lv_char        TYPE c,
+          lv_can_access  TYPE abap_bool,
+          lv_solution_p1 TYPE i,
+          ls_size        TYPE ts_vec2i,
+          ls_position    TYPE ts_vec2i.
+
+    ls_size-x = strlen( mt_input[ 1 ] ).
+    ls_size-y = lines( mt_input ).
+
+    DO ls_size-y TIMES.
+      ls_position-y = sy-index - 1.
+      DO ls_size-y TIMES.
+        ls_position-x = sy-index - 1.
+
+        lv_char = get_char_xy( ls_position ).
+
+        IF lv_char = '@'.
+          " Check neighbors. If there are fewer than four
+          " rolls in the neighboring positions then it can be accessed
+          lv_can_access = day04_can_forklift_access(
+            is_position = ls_position
+            is_size     = ls_size
+          ).
+
+          IF lv_can_access = abap_true.
+            ADD 1 TO lv_solution_p1.
+          ENDIF.
+        ENDIF.
+      ENDDO.
+    ENDDO.
+
+    WRITE: |Part 01: Solution: { lv_solution_p1 }|, /.
+  ENDMETHOD.
+
+  METHOD day04_can_forklift_access.
+    DATA: lv_char          TYPE c,
+          lv_num_neighbors TYPE i,
+          ls_new_position  TYPE ts_vec2i,
+          lt_check_deltas  TYPE TABLE OF ts_vec2i.
+
+    lt_check_deltas = VALUE #(
+      ( x = 0  y =  1 ) " Up
+      ( x = 1  y =  1 ) " Up Right
+      ( x = 1  y =  0 ) " Right
+      ( x = 1  y = -1 ) " Down Right
+      ( x = 0  y = -1 ) " Down
+      ( x = -1 y = -1 ) " Down Left
+      ( x = -1 y =  0 ) " Left
+      ( x = -1 y =  1 ) " Up Left
+    ).
+
+    LOOP AT lt_check_deltas ASSIGNING FIELD-SYMBOL(<ls_check_delta>).
+      " Bounds checks
+      IF is_position-x = 0 AND <ls_check_delta>-x < 0.
+        CONTINUE.
+      ENDIF.
+      IF is_position-y = 0 AND <ls_Check_delta>-y < 0.
+        CONTINUE.
+      ENDIF.
+      IF is_position-x >= is_size-x - 1 AND <ls_check_delta>-x > 0.
+        CONTINUE.
+      ENDIF.
+      IF is_position-y >= is_size-y - 1 AND <ls_check_delta>-y > 0.
+        CONTINUE.
+      ENDIF.
+
+      ls_new_position-x = is_position-x + <ls_check_delta>-x.
+      ls_new_position-y = is_position-y + <ls_check_delta>-y.
+
+      lv_char = get_char_xy( ls_new_position ).
+
+      IF lv_char = '@'.
+        ADD 1 TO lv_num_neighbors.
+      ENDIF.
+    ENDLOOP.
+
+    IF lv_num_neighbors < 4.
+      rv_can_access = abap_true.
+    ELSE.
+      rv_can_access = abap_false.
+    ENDIF.
   ENDMETHOD.
 ENDCLASS.
