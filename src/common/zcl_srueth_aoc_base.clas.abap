@@ -35,6 +35,11 @@ CLASS zcl_srueth_aoc_base DEFINITION
       RETURNING
         VALUE(rv_char) TYPE char1.
 
+    METHODS set_char_xy
+      IMPORTING
+        is_coord      TYPE ts_vec2i
+        iv_value      TYPE c.
+
   PROTECTED SECTION.
     DATA mv_day_meth_prefix TYPE string.
     DATA mv_verbose TYPE abap_bool.
@@ -133,5 +138,13 @@ CLASS zcl_srueth_aoc_base IMPLEMENTATION.
   METHOD get_char_xy.
     DATA(lv_line) = mt_input[ is_coord-y + 1 ].
     rv_char = lv_line+is_coord-x(1).
+  ENDMETHOD.
+
+  METHOD set_char_xy.
+    DATA: lv_line_buf TYPE char256.
+
+    lv_line_buf = mt_input[ is_coord-y + 1 ].
+    lv_line_buf+is_coord-x(1) = iv_value.
+    mt_input[ is_coord-y + 1 ] = lv_line_buf.
   ENDMETHOD.
 ENDCLASS.

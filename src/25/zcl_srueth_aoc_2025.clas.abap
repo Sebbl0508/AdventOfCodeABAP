@@ -251,15 +251,18 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD day_04.
-    DATA: lv_char        TYPE c,
-          lv_can_access  TYPE abap_bool,
-          lv_solution_p1 TYPE i,
-          ls_size        TYPE ts_vec2i,
-          ls_position    TYPE ts_vec2i.
+    DATA: lv_char             TYPE c,
+          lv_can_access       TYPE abap_bool,
+          lv_solution_p1      TYPE i,
+          lv_solution_p2      TYPE i,
+          ls_size             TYPE ts_vec2i,
+          ls_position         TYPE ts_vec2i,
+          lt_remove_positions TYPE TABLE OF ts_vec2i.
 
     ls_size-x = strlen( mt_input[ 1 ] ).
     ls_size-y = lines( mt_input ).
 
+    " Part 01: Just check once for accessability
     DO ls_size-y TIMES.
       ls_position-y = sy-index - 1.
       DO ls_size-y TIMES.
@@ -282,7 +285,51 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
       ENDDO.
     ENDDO.
 
+    " Part 02: Check until no rolls are removed no more.
+    DO.
+      CLEAR: lt_remove_positions.
+
+      DO ls_size-y TIMES.
+        ls_position-y = sy-index - 1.
+        DO ls_size-y TIMES.
+          ls_position-x = sy-index - 1.
+
+          lv_char = get_char_xy( ls_position ).
+
+          IF lv_char = '@'.
+            " Check neighbors. If there are fewer than four
+            " rolls in the neighboring positions then it can be accessed
+            lv_can_access = day04_can_forklift_access(
+              is_position = ls_position
+              is_size     = ls_size
+            ).
+
+            IF lv_can_access = abap_true.
+              APPEND ls_position TO lt_remove_positions.
+            ENDIF.
+          ENDIF.
+        ENDDO.
+      ENDDO.
+
+      IF lines( lt_remove_positions ) = 0.
+        EXIT.
+      ENDIF.
+
+      LOOP AT lt_remove_positions ASSIGNING FIELD-SYMBOL(<ls_remove_position>).
+        " Remove roll
+        set_char_xy(
+          is_coord = <ls_remove_position>
+          iv_value = '.'
+        ).
+
+        ADD 1 TO lv_solution_p2.
+      ENDLOOP.
+    ENDDO.
+
+
+
     WRITE: |Part 01: Solution: { lv_solution_p1 }|, /.
+    WRITE: |Part 02: Solution: { lv_solution_p2 }|, /.
   ENDMETHOD.
 
   METHOD day04_can_forklift_access.
