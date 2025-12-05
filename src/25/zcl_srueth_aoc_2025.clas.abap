@@ -382,7 +382,10 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
           lv_tmp_high            TYPE string,
           lv_done_reading_ranges TYPE abap_bool,
           lv_is_fresh            TYPE abap_bool,
+          lv_num_ids             TYPE int8,
           lv_solution_p1         TYPE int8,
+          lv_solution_p2         TYPE int8,
+          lv_highest_id          TYPE int8,
           lt_fresh_id_ranges     TYPE tt_i64_range,
           lt_available_ids       TYPE TABLE OF int8.
 
@@ -422,6 +425,35 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
       ENDIF.
     ENDLOOP.
 
+    SORT lt_fresh_id_ranges BY low.
+
+    LOOP AT lt_fresh_id_ranges ASSIGNING <ls_id_range>.
+      " Check if the low value is less than the highest seen id.
+      " If yes, we need to skip/modify some numbers so we don't count them multiple times.
+      IF <ls_id_range>-low LE lv_highest_id.
+        " Check if the high value is higher than the highest seen id.
+        IF <ls_id_range>-high GT lv_highest_id.
+          " Adjust low-value to the last highest id. Shortening the range.
+          <ls_id_range>-low = lv_highest_id + 1.
+        ELSE.
+          " If the high-value is also lower than the highest id,
+          " we can completely skip the range, since we already counted
+          " those IDs.
+          CONTINUE.
+        ENDIF.
+      ENDIF.
+
+      " WARN: With the code above, there may still be the possibility to construct a 'broken'
+      "       range. Since we modify the low-value without checking afterwards if it is still
+      "       lower than the high-value.
+
+      lv_num_ids = ( <ls_id_range>-high - <ls_id_range>-low ) + 1.
+      ADD lv_num_ids TO lv_solution_p2.
+
+      lv_highest_id = <ls_id_range>-high.
+    ENDLOOP.
+
     WRITE: |Part 01: Solution: { lv_solution_p1 }|, /.
+    WRITE: |Part 02: Solution: { lv_solution_p2 }|, /.
   ENDMETHOD.
 ENDCLASS.
