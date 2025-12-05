@@ -8,6 +8,7 @@ CLASS zcl_srueth_aoc_2025 DEFINITION
     METHODS day_02.
     METHODS day_03.
     METHODS day_04.
+    METHODS day_05.
 
   PROTECTED SECTION.
     METHODS day03_get_largest_joltage
@@ -65,11 +66,6 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD day_02.
-    TYPES: BEGIN OF tt_i64_range,
-             low  TYPE int8,
-             high TYPE int8,
-           END OF tt_i64_range.
-
     DATA: lv_lower_txt           TYPE string,
           lv_upper_txt           TYPE string,
           lv_counter             TYPE int8,
@@ -89,7 +85,7 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
           lv_is_invalid_id       TYPE abap_bool,
           lv_solution_p1         TYPE int8,
           lv_solution_p2         TYPE int8,
-          lt_ranges              TYPE TABLE OF tt_i64_range,
+          lt_ranges              TYPE tt_i64_range,
           lt_text_ranges         TYPE TABLE OF string.
 
     " Convert input to ranges
@@ -379,5 +375,53 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
     ELSE.
       rv_can_access = abap_false.
     ENDIF.
+  ENDMETHOD.
+
+  METHOD day_05.
+    DATA: lv_tmp_low             TYPE string,
+          lv_tmp_high            TYPE string,
+          lv_done_reading_ranges TYPE abap_bool,
+          lv_is_fresh            TYPE abap_bool,
+          lv_solution_p1         TYPE int8,
+          lt_fresh_id_ranges     TYPE tt_i64_range,
+          lt_available_ids       TYPE TABLE OF int8.
+
+    FIELD-SYMBOLS: <ls_id_range> TYPE ts_i64_range.
+
+    LOOP AT mt_input ASSIGNING FIELD-SYMBOL(<lv_line>).
+      CLEAR: lv_tmp_low, lv_tmp_high.
+
+      IF <lv_line> = ''.
+        lv_done_reading_ranges = abap_true.
+        CONTINUE.
+      ENDIF.
+
+      IF lv_done_reading_ranges = abap_false.
+        SPLIT <lv_line> AT '-' INTO lv_tmp_low lv_tmp_high.
+
+        APPEND INITIAL LINE TO lt_fresh_id_ranges ASSIGNING <ls_id_range>.
+        <ls_id_range>-low  = lv_tmp_low.
+        <ls_id_range>-high = lv_tmp_high.
+      ELSE.
+        APPEND CONV int8( <lv_line> ) TO lt_available_ids.
+      ENDIF.
+    ENDLOOP.
+
+    LOOP AT lt_available_ids ASSIGNING FIELD-SYMBOL(<lv_avl_id>).
+      CLEAR: lv_is_fresh.
+
+      LOOP AT lt_fresh_id_ranges ASSIGNING <ls_id_range>.
+        IF <lv_avl_id> GE <ls_id_range>-low AND <lv_avl_id> LE <ls_id_range>-high.
+          lv_is_fresh = abap_true.
+          EXIT.
+        ENDIF.
+      ENDLOOP.
+
+      IF lv_is_fresh = abap_true.
+        ADD 1 TO lv_solution_p1.
+      ENDIF.
+    ENDLOOP.
+
+    WRITE: |Part 01: Solution: { lv_solution_p1 }|, /.
   ENDMETHOD.
 ENDCLASS.

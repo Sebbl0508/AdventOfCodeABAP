@@ -8,6 +8,14 @@ CLASS zcl_srueth_aoc_base DEFINITION
              y TYPE i,
            END OF ts_vec2i.
 
+    TYPES: BEGIN OF ts_i64_range,
+             low  TYPE int8,
+             high TYPE int8,
+           END OF ts_i64_range.
+
+    TYPES: tt_vec2i     TYPE TABLE OF ts_vec2i,
+           tt_i64_range TYPE TABLE OF ts_i64_range.
+
 
     METHODS constructor
       IMPORTING
