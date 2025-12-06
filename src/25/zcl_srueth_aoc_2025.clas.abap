@@ -12,6 +12,11 @@ CLASS zcl_srueth_aoc_2025 DEFINITION
     METHODS day_06.
 
   PROTECTED SECTION.
+    TYPES: BEGIN OF ts_day06_problem,
+           operation TYPE c LENGTH 1,
+           numbers   TYPE ztt_srueth_int8,
+         END OF ts_day06_problem.
+
     METHODS day03_get_largest_joltage
       IMPORTING iv_bank           TYPE string
                 iv_num_batteries  TYPE i
@@ -23,6 +28,9 @@ CLASS zcl_srueth_aoc_2025 DEFINITION
       IMPORTING is_position          TYPE ts_vec2i
                 is_size              TYPE ts_vec2i
       RETURNING VALUE(rv_can_access) TYPE abap_bool.
+
+    METHODS day_06_part01.
+    METHODS day_06_part02.
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -459,11 +467,11 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD day_06.
-    TYPES: BEGIN OF ts_day06_problem,
-             operation TYPE c LENGTH 1,
-             numbers   TYPE ztt_srueth_int8,
-           END OF ts_day06_problem.
+    day_06_part01( ).
+    day_06_part02( ).
+  ENDMETHOD.
 
+  METHOD day_06_part01.
     DATA: lv_last_len    TYPE i,
           lv_number      TYPE int8,
           lv_index       TYPE i,
@@ -472,10 +480,11 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
           lt_line        TYPE ztt_srueth_string,
           lt_problems    TYPE TABLE OF ts_day06_problem.
 
-    FIELD-SYMBOLS: <lv_string>  TYPE string,
-                   <lv_number>  TYPE int8,
-                   <ls_problem> TYPE ts_day06_problem,
-                   <lt_line>    TYPE ztt_srueth_string.
+    FIELD-SYMBOLS: <lv_string>   TYPE string,
+                   <lv_number>   TYPE int8,
+                   <lv_dyn_char> TYPE any,
+                   <ls_problem>  TYPE ts_day06_problem,
+                   <lt_line>     TYPE ztt_srueth_string.
 
     " Transform inputs to table of columns/cells
     LOOP AT mt_input ASSIGNING FIELD-SYMBOL(<lv_line>).
@@ -550,6 +559,113 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
       ADD lv_number TO lv_solution_p1.
     ENDLOOP.
 
+*    " THIS DOESN'T WORK. THE NUMBERS ARE NOT ALIGNED THE SAME
+*    " IN THE INPUT!
+*
+*    " Calculate solutions for part 02.
+*    LOOP AT lt_problems ASSIGNING <ls_problem>.
+*      CLEAR: lv_max_len, lr_dyn_char.
+*
+*      " Find out length of highest number
+*      LOOP AT <ls_problem>-numbers ASSIGNING <lv_number>.
+*        lv_number = strlen( CONV string( <lv_number> ) ).
+*        IF lv_number > lv_max_len.
+*          lv_max_len = lv_number.
+*        ENDIF.
+*      ENDLOOP.
+*
+*      " Create 'string' of dynamic length
+*      CREATE DATA lr_dyn_char TYPE c LENGTH lv_max_len.
+*      ASSIGN lr_dyn_char->* TO <lv_dyn_char>.
+*
+*      DO lv_max_len TIMES.
+*        lv_index = sy-index - lv_max_len - 1.
+*
+*        LOOP AT <ls_problem>-numbers ASSIGNING <lv_number>.
+*        ENDLOOP.
+*      ENDDO.
+*    ENDLOOP.
+
     WRITE: |Part 01: Solution: { lv_solution_p1 }|, /.
+  ENDMETHOD.
+
+  METHOD day_06_part02.
+    DATA: lv_char                 TYPE c,
+          lv_number               TYPE int8,
+          lv_solution_p2          TYPE int8,
+          lv_got_char_this_column TYPE abap_bool,
+          lv_number_str_buf       TYPE string,
+          ls_size                 TYPE ts_vec2i,
+          ls_position             TYPE ts_vec2i,
+          lt_problems             TYPE TABLE OF ts_day06_problem.
+
+    FIELD-SYMBOLS: <lv_number>  TYPE int8,
+                   <ls_problem> TYPE ts_day06_problem.
+
+    ls_size = get_size( ).
+
+    APPEND INITIAL LINE TO lt_problems ASSIGNING <ls_problem>.
+
+    " Loop column first, not line-first
+    DO ls_size-x TIMES.
+      CLEAR: lv_got_char_this_column, lv_number_str_buf.
+
+      ls_position-x = sy-index - 1.
+
+      DO ls_size-y TIMES.
+        ls_position-y = sy-index - 1.
+
+        lv_char = get_char_xy( ls_position ).
+
+        IF lv_char IS INITIAL.
+          CONTINUE.
+        ENDIF.
+
+        lv_got_char_this_column = abap_true.
+
+        IF lv_char CO gc_digits.
+          CONCATENATE lv_number_str_buf lv_char INTO lv_number_str_buf.
+        ELSE.
+          <ls_problem>-operation = lv_char.
+        ENDIF.
+      ENDDO.
+
+      " Nothing but whitespace in this column.
+      " This marks the beginning of a new problem.
+      IF lv_got_char_this_column = abap_false.
+        APPEND INITIAL LINE TO lt_problems ASSIGNING <ls_problem>.
+        CONTINUE.
+      ENDIF.
+
+      IF lv_number_str_buf IS INITIAL.
+        MESSAGE |Number buffer was initial!| TYPE 'E'.
+      ENDIF.
+
+      lv_number = lv_number_str_buf.
+      APPEND lv_number TO <ls_problem>-numbers.
+    ENDDO.
+
+    " Calculate the solutions to the problems.
+    LOOP AT lt_problems ASSIGNING <ls_problem>.
+      CLEAR: lv_number.
+
+      LOOP AT <ls_problem>-numbers ASSIGNING <lv_number>.
+        IF sy-tabix = 1.
+          lv_number = <lv_number>.
+          CONTINUE.
+        ENDIF.
+
+        CASE <ls_problem>-operation.
+          WHEN '*'.
+            lv_number *= <lv_number>.
+          WHEN '+'.
+            lv_number += <lv_number>.
+        ENDCASE.
+      ENDLOOP.
+
+      ADD lv_number TO lv_solution_p2.
+    ENDLOOP.
+
+    WRITE: |Part 02: Solution: { lv_solution_p2 }|, /.
   ENDMETHOD.
 ENDCLASS.

@@ -17,6 +17,8 @@ CLASS zcl_srueth_aoc_base DEFINITION
            tt_i64_range TYPE TABLE OF ts_i64_range,
            tt_int8      TYPE TABLE OF int8.
 
+    CONSTANTS: gc_digits TYPE string VALUE '0123456789'.
+
 
     METHODS constructor
       IMPORTING
@@ -48,6 +50,9 @@ CLASS zcl_srueth_aoc_base DEFINITION
       IMPORTING
         is_coord      TYPE ts_vec2i
         iv_value      TYPE c.
+
+    METHODS get_size
+      RETURNING VALUE(rs_size) TYPE ts_vec2i.
 
   PROTECTED SECTION.
     DATA mv_day_meth_prefix TYPE string.
@@ -155,5 +160,12 @@ CLASS zcl_srueth_aoc_base IMPLEMENTATION.
     lv_line_buf = mt_input[ is_coord-y + 1 ].
     lv_line_buf+is_coord-x(1) = iv_value.
     mt_input[ is_coord-y + 1 ] = lv_line_buf.
+  ENDMETHOD.
+
+  METHOD get_size.
+    CLEAR: rs_size.
+
+    rs_size-x = strlen( mt_input[ 1 ] ).
+    rs_size-y = lines( mt_input ).
   ENDMETHOD.
 ENDCLASS.
