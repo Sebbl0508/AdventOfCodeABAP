@@ -14,7 +14,8 @@ CLASS zcl_srueth_aoc_base DEFINITION
            END OF ts_i64_range.
 
     TYPES: tt_vec2i     TYPE TABLE OF ts_vec2i,
-           tt_i64_range TYPE TABLE OF ts_i64_range.
+           tt_i64_range TYPE TABLE OF ts_i64_range,
+           tt_int8      TYPE TABLE OF int8.
 
 
     METHODS constructor

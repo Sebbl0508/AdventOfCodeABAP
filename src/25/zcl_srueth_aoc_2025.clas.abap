@@ -9,6 +9,7 @@ CLASS zcl_srueth_aoc_2025 DEFINITION
     METHODS day_03.
     METHODS day_04.
     METHODS day_05.
+    METHODS day_06.
 
   PROTECTED SECTION.
     METHODS day03_get_largest_joltage
@@ -455,5 +456,100 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
 
     WRITE: |Part 01: Solution: { lv_solution_p1 }|, /.
     WRITE: |Part 02: Solution: { lv_solution_p2 }|, /.
+  ENDMETHOD.
+
+  METHOD day_06.
+    TYPES: BEGIN OF ts_day06_problem,
+             operation TYPE c LENGTH 1,
+             numbers   TYPE ztt_srueth_int8,
+           END OF ts_day06_problem.
+
+    DATA: lv_last_len    TYPE i,
+          lv_number      TYPE int8,
+          lv_index       TYPE i,
+          lv_solution_p1 TYPE int8,
+          lt_lines       TYPE TABLE OF ztt_srueth_string,
+          lt_line        TYPE ztt_srueth_string,
+          lt_problems    TYPE TABLE OF ts_day06_problem.
+
+    FIELD-SYMBOLS: <lv_string>  TYPE string,
+                   <lv_number>  TYPE int8,
+                   <ls_problem> TYPE ts_day06_problem,
+                   <lt_line>    TYPE ztt_srueth_string.
+
+    " Transform inputs to table of columns/cells
+    LOOP AT mt_input ASSIGNING FIELD-SYMBOL(<lv_line>).
+      CLEAR: lt_line.
+
+      SPLIT <lv_line> AT space INTO TABLE lt_line.
+
+      LOOP AT lt_line ASSIGNING <lv_string>.
+        " Trim string.
+        CONDENSE <lv_string>.
+
+        " If the string is empty...
+        IF <lv_string> IS INITIAL.
+          " ...remove this from the lt_line itab.
+          DELETE lt_line.
+        ENDIF.
+      ENDLOOP.
+
+      APPEND lt_line TO lt_lines.
+    ENDLOOP.
+
+    " Fill problems array with initial entries.
+    DO lines( lt_lines[ 1 ] ) TIMES.
+      APPEND INITIAL LINE TO lt_problems.
+    ENDDO.
+
+    " Convert table of columns/cells to table of problems.
+    LOOP AT lt_lines ASSIGNING <lt_line>.
+      " Sanity-check number of problems is the same on each line.
+      IF sy-tabix <> 1 AND lv_last_len <> lines( <lt_line> ).
+        MESSAGE |Line { sy-tabix }: Length doesn't match previous. { lines( <lt_line> ) } <> { lv_last_len }| TYPE 'E'.
+      ENDIF.
+
+      LOOP AT <lt_line> ASSIGNING <lv_string>.
+        lv_index = sy-tabix.
+
+        READ TABLE lt_problems INDEX lv_index ASSIGNING <ls_problem>.
+        IF sy-subrc <> 0.
+          MESSAGE |Couldn't read index { lv_index } of problems itab.| TYPE 'E'.
+        ENDIF.
+
+        TRY.
+            lv_number = <lv_string>.
+            APPEND lv_number TO <ls_problem>-numbers.
+          CATCH cx_sy_conversion_error.
+            " It was not a number, so i'm assuming it's the math operation.
+            <ls_problem>-operation = <lv_string>.
+        ENDTRY.
+      ENDLOOP.
+
+      lv_last_len = lines( <lt_line> ).
+    ENDLOOP.
+
+    " Calculate the solutions to the problems.
+    LOOP AT lt_problems ASSIGNING <ls_problem>.
+      CLEAR: lv_number.
+
+      LOOP AT <ls_problem>-numbers ASSIGNING <lv_number>.
+        IF sy-tabix = 1.
+          lv_number = <lv_number>.
+          CONTINUE.
+        ENDIF.
+
+        CASE <ls_problem>-operation.
+          WHEN '*'.
+            lv_number *= <lv_number>.
+          WHEN '+'.
+            lv_number += <lv_number>.
+        ENDCASE.
+      ENDLOOP.
+
+      ADD lv_number TO lv_solution_p1.
+    ENDLOOP.
+
+    WRITE: |Part 01: Solution: { lv_solution_p1 }|, /.
   ENDMETHOD.
 ENDCLASS.
