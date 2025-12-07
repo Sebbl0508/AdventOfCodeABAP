@@ -10,6 +10,7 @@ CLASS zcl_srueth_aoc_2025 DEFINITION
     METHODS day_04.
     METHODS day_05.
     METHODS day_06.
+    METHODS day_07.
 
   PROTECTED SECTION.
     TYPES: BEGIN OF ts_day06_problem,
@@ -31,7 +32,12 @@ CLASS zcl_srueth_aoc_2025 DEFINITION
 
     METHODS day_06_part01.
     METHODS day_06_part02.
+
+    METHODS day_07_move_beam
+      IMPORTING is_position          TYPE ts_vec2i
+      RETURNING VALUE(rv_num_splits) TYPE i.
   PRIVATE SECTION.
+    DATA mt_day07_split_cache TYPE tt_vec2i.
 ENDCLASS.
 
 
@@ -667,5 +673,83 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
     ENDLOOP.
 
     WRITE: |Part 02: Solution: { lv_solution_p2 }|, /.
+  ENDMETHOD.
+
+  METHOD day_07.
+    DATA: lv_char           TYPE c,
+          lv_found_start    TYPE abap_bool,
+          lv_num_splits     TYPE i,
+          ls_start_position TYPE ts_vec2i,
+          ls_size           TYPE ts_vec2i,
+          lt_split_cache    TYPE TABLE OF ts_vec2i.
+
+    ls_size = get_size( ).
+
+    " Find the starting point
+    DO ls_size-y TIMES.
+      ls_start_position-y = sy-index - 1.
+
+      DO ls_size-x TIMES.
+        ls_start_position-x = sy-index - 1.
+
+        lv_char = get_char_xy( ls_start_position ).
+        IF lv_char = 'S'.
+          lv_found_start = abap_true.
+          EXIT.
+        ENDIF.
+      ENDDO.
+
+      IF lv_found_start = abap_true.
+        EXIT.
+      ENDIF.
+    ENDDO.
+
+    lv_num_splits = day_07_move_beam( ls_start_position ).
+
+    WRITE: |Part 01: Solution: { lv_num_splits }|, /.
+  ENDMETHOD.
+
+  METHOD day_07_move_beam.
+    DATA: lv_char         TYPE c,
+          lv_splits_left  TYPE i,
+          lv_splits_right TYPE i,
+          ls_size         TYPE ts_vec2i,
+          ls_position     TYPE ts_vec2i.
+
+    ls_position = is_position.
+    ls_size = get_size( ).
+
+    DO.
+      ADD 1 TO ls_position-y.
+
+      IF ls_position-y GE ls_size-y.
+        EXIT.
+      ENDIF.
+
+      lv_char = get_char_xy( ls_position ).
+
+      IF lv_char = '^'.
+        READ TABLE mt_day07_split_cache WITH KEY table_line = ls_position
+          TRANSPORTING NO FIELDS.
+        IF sy-subrc = 0.
+          " We already split here. Don't split again.
+          EXIT.
+        ENDIF.
+
+        APPEND ls_position TO mt_day07_split_cache.
+
+        lv_splits_left  = day_07_move_beam( VALUE #(
+          x = ls_position-x - 1
+          y = ls_position-y
+        ) ).
+        lv_splits_right = day_07_move_beam( VALUE #(
+          x = ls_position-x + 1
+          y = ls_position-y
+        ) ).
+
+        rv_num_splits = lv_splits_left + lv_splits_right + 1.
+        EXIT.
+      ENDIF.
+    ENDDO.
   ENDMETHOD.
 ENDCLASS.
