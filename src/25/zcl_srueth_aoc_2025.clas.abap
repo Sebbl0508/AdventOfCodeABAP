@@ -14,9 +14,14 @@ CLASS zcl_srueth_aoc_2025 DEFINITION
 
   PROTECTED SECTION.
     TYPES: BEGIN OF ts_day06_problem,
-           operation TYPE c LENGTH 1,
-           numbers   TYPE ztt_srueth_int8,
-         END OF ts_day06_problem.
+             operation TYPE c LENGTH 1,
+             numbers   TYPE ztt_srueth_int8,
+           END OF ts_day06_problem.
+
+    TYPES: BEGIN OF ts_day07_cache,
+             position    TYPE ts_vec2i,
+             num_splits  TYPE int8,
+           END OF ts_day07_cache.
 
     METHODS day03_get_largest_joltage
       IMPORTING iv_bank           TYPE string
@@ -35,9 +40,10 @@ CLASS zcl_srueth_aoc_2025 DEFINITION
 
     METHODS day_07_move_beam
       IMPORTING is_position          TYPE ts_vec2i
-      RETURNING VALUE(rv_num_splits) TYPE i.
+                iv_use_cache         TYPE abap_bool
+      RETURNING VALUE(rv_num_splits) TYPE int8.
   PRIVATE SECTION.
-    DATA mt_day07_split_cache TYPE tt_vec2i.
+    DATA mt_day07_split_cache TYPE TABLE OF ts_day07_cache.
 ENDCLASS.
 
 
@@ -678,7 +684,8 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
   METHOD day_07.
     DATA: lv_char           TYPE c,
           lv_found_start    TYPE abap_bool,
-          lv_num_splits     TYPE i,
+          lv_num_splits_p1  TYPE int8,
+          lv_num_splits_p2  TYPE int8,
           ls_start_position TYPE ts_vec2i,
           ls_size           TYPE ts_vec2i,
           lt_split_cache    TYPE TABLE OF ts_vec2i.
@@ -704,17 +711,28 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
       ENDIF.
     ENDDO.
 
-    lv_num_splits = day_07_move_beam( ls_start_position ).
+    lv_num_splits_p1 = day_07_move_beam(
+      is_position  = ls_start_position
+      iv_use_cache = abap_true
+    ).
+    CLEAR: mt_day07_split_cache.
+    lv_num_splits_p2 = day_07_move_beam(
+      is_position  = ls_start_position
+      iv_use_cache = abap_false
+    ).
 
-    WRITE: |Part 01: Solution: { lv_num_splits }|, /.
+    WRITE: |Part 01: Solution: { lv_num_splits_p1 }|, /.
+    WRITE: |Part 02: Solution: { lv_num_splits_p2 + 1 }|, /.
   ENDMETHOD.
 
   METHOD day_07_move_beam.
     DATA: lv_char         TYPE c,
-          lv_splits_left  TYPE i,
-          lv_splits_right TYPE i,
+          lv_splits_left  TYPE int8,
+          lv_splits_right TYPE int8,
           ls_size         TYPE ts_vec2i,
           ls_position     TYPE ts_vec2i.
+
+    FIELD-SYMBOLS: <ls_cache_entry> TYPE ts_day07_cache.
 
     ls_position = is_position.
     ls_size = get_size( ).
@@ -729,24 +747,36 @@ CLASS zcl_srueth_aoc_2025 IMPLEMENTATION.
       lv_char = get_char_xy( ls_position ).
 
       IF lv_char = '^'.
-        READ TABLE mt_day07_split_cache WITH KEY table_line = ls_position
-          TRANSPORTING NO FIELDS.
+        READ TABLE mt_day07_split_cache WITH KEY position = ls_position
+          ASSIGNING <ls_cache_entry>.
         IF sy-subrc = 0.
+          IF iv_use_cache = abap_false.
+            rv_num_splits = <ls_cache_entry>-num_splits + 1.
+          ENDIF.
+
           " We already split here. Don't split again.
           EXIT.
         ENDIF.
 
-        APPEND ls_position TO mt_day07_split_cache.
+        APPEND INITIAL LINE TO mt_day07_split_cache ASSIGNING <ls_cache_entry>.
+        <ls_cache_entry>-position = ls_position.
 
-        lv_splits_left  = day_07_move_beam( VALUE #(
-          x = ls_position-x - 1
-          y = ls_position-y
-        ) ).
-        lv_splits_right = day_07_move_beam( VALUE #(
-          x = ls_position-x + 1
-          y = ls_position-y
-        ) ).
+        lv_splits_left = day_07_move_beam(
+          is_position = VALUE #(
+            x = ls_position-x - 1
+            y = ls_position-y
+          )
+          iv_use_cache = iv_use_cache
+        ).
+        lv_splits_right = day_07_move_beam(
+          is_position = VALUE #(
+            x = ls_position-x + 1
+            y = ls_position-y
+          )
+          iv_use_cache = iv_use_cache
+        ).
 
+        <ls_cache_entry>-num_splits = lv_splits_left + lv_splits_right.
         rv_num_splits = lv_splits_left + lv_splits_right + 1.
         EXIT.
       ENDIF.
